@@ -174,6 +174,77 @@ console.log(solution(str));
 
 // 1.구현_문자열 압축
 // 1.구현_자물쇠와 열쇠
+
+const solution = (key,lock) => {
+  let answer = false;
+  // 2차원 리스트 90도 회전(3번회전)
+  // 배열을 회전하는 함수
+  const rotateR = (arr) => {
+    let n = arr.length;
+    let m = arr[0].length;
+    const result = Array.from({ length: n },() => Array(m).fill(0));
+    for (let i=0; i<n; i++) { // 0-3
+      for(let j=0; j<m; j++) {
+        result[j][n-i-1] = arr[i][j]
+      }
+    }
+    return result;
+  }
+  const check = (graph,lockLen) => {
+    for(let i=lockLen; i<lockLen*2; i++) {
+      for(let j=lockLen; j<lockLen*2; j++) {
+        if(graph[i][j] !== 1) return false;
+      }
+    }
+    return true;
+  }
+  const attach = (x, y, length, key, graph) => {
+    for (let i=0; i<length; i++) {
+      for (let j=0; j<length; j++) {
+        graph[x+i][y+j] += key[i][j];
+      }
+    }
+  }
+  const detach = (x, y, length, key, graph) => {
+    for (let i=0; i<length; i++) {
+      for (let j=0; j<length; j++) {
+        graph[x+i][y+j] -= key[i][j];
+      }
+    }
+  } 
+
+  // 좌물쇠 크기를 기존의 3배로 전환
+  const keyLen = key.length;
+  const lockLen = lock.length;
+  const len = lockLen * 3;
+  const graph = Array.from({ length: len },() => Array(len).fill(0)); 
+  // 정중앙에 좌물쇠 배열 값 삽입
+  for (let i=0; i<lockLen; i++) {
+    for (let j =0; j<lockLen; j++) {
+      graph[i+lockLen][j+lockLen] = lock[i][j];
+    } 
+  }
+  // 4가지 방향에 대해서 확인
+  for (let i=0; i<4; i++) {
+    key = rotateR(key); // 열쇠회전 0-3
+    for (let x=0; x<lockLen*2; x++) {
+      for (let y=0; y<lockLen*2; y++) {
+       // 좌물쇠에 열쇠를 끼워 넣기
+       attach(x, y, keyLen, key, graph);
+       if(check(graph,lockLen)) return answer = true;
+       // 좌물쇠에 열쇠 빼기
+       detach(x,y,keyLen,key,graph);
+      }
+    }
+    // 좌물쇠의 영역이 모두 1인지 확인(하라도 2나 0이 아니다.)
+  }
+  return answer; // 열쇠로 자물쇠를 열 수 있으면 true
+};
+
+let key = [[0, 0, 0], [1, 0, 0], [0, 1, 1]];
+let lock = [[1, 1, 1], [1, 1, 0], [1, 0, 1]];	
+console.log(solution(key,lock));
+
 // 1.구현_뱀
 
 const solution = (n,appleL,dir) => {
@@ -316,5 +387,72 @@ console.log(solution(10,appleL,dir));
 */
 
 // 1.구현_기둥과 보 설치
+
 // 1.구현_치킨 배달
+
 // 1.구현_외벽 점검
+
+const solution = (n, weak, dist) => {
+  let answer = Number.MAX_SAFE_INTEGER;
+  let length = dist.length;
+  const len = weak.length;
+  // 순차 접근 배열의 크기는 기존 weak 배열의 길이*2 - 1과 같다.
+  const flatten = new Array(len * 2 - 1).fill(0);
+  // linear_weak 배열의 크기만큼 반복문을 돌면서
+  // 각 시작지점의 도착점을 계산하여 추가
+  for (let i = 0; i < len * 2 - 1; i++)
+    flatten[i] = i < len ? weak[i] : weak[i - len] + n;
+  // console.log(flatten)
+  let list = [];
+  let visited = Array(length + 1).fill(0);
+  let result = Array(length).fill(0);
+  dist.sort((a, b) => {
+    return b - a;
+  });
+  const permutation = (L) => {
+    if (L === length) {
+      list.push(result.slice());
+    } else {
+      for (let i = 0; i < length; i++) {
+        if (visited[i] === 0) {
+          visited[i] = 1;
+          result[L] = dist[i];
+          permutation(L + 1);
+          visited[i] = 0;
+        }
+      }
+    }
+  };
+  permutation(0);
+
+  for (let start = 0; start < len; start++) {
+    for (const mates of list) {
+      let cnt = 1; // 친구 사용 개수, 처음에 한명 사용
+      let position = start;
+      // 그 위치가 취약지점 중 어디까지 처리 할 수 있는 지 탐색
+      // len 길이는 4
+      for (let k = 1; k < len; k++) {
+        let nextPosition = start + k;
+        let diff = flatten[nextPosition] - flatten[position];
+        if (diff > mates[cnt - 1]) {
+          position = nextPosition;
+          cnt++;
+          if (cnt > length) break;
+        }
+      }
+      // 다 탐색했을 때의 cnt를 최소값으로 업데이트
+      answer = Math.min(answer, cnt);
+    }
+  }
+  // 사용된 친구가 사용할 수 있는 친구 보다 많으면,
+  if (answer > len) answer = -1;
+  return answer;
+};
+/**
+let weak = [1, 5, 6, 10];
+let dist = [1, 2, 3, 4];
+console.log(solution(12, weak, dist));
+*/
+let weak = [1, 3, 4, 9, 10];
+let dist = [3, 5, 7];
+console.log(solution(12, weak, dist)); 
