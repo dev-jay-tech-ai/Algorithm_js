@@ -281,9 +281,128 @@ console.log(solution(2,3,2, arr));
 
 // 3.DFS/BFS_괄호 변환
 
+const solution = (str) => {
+  let answer = '';
 
+  const isBalenced = (s) => {
+    let left = 0;
+    let right = 0;
+    let str = [...s];
+    let result = false;
+    for(let i=0; i<str.length; i++) {
+      if(str[i] === '(') left++;
+      else right++;
+      if(left>0&&right>0&&left===right) {
+        result = i;
+        break;
+      };
+    }
+    return result; 
+  }
+  const isCorrect = (s) => {
+    let str = [...s];
+    let stack = [];
+    stack.push(str[0]);
+    for(let i=1; i<str.length; i++) {
+      if(str[i] === '(') stack.push(str[i]);
+      else stack.pop();
+    }
+    if(stack.length) return false;
+    else return true;
+  }
+  // console.log('균형?',isBalenced(str));
+  // console.log('올바름?',isCorrect(str));
+
+  const recursion = (str) => {
+    if(!str.length) return answer; // 빈 문자열인 경우 빈 문자열 반환
+    let num = isBalenced(str)+1;
+    let u = str.slice(0,num);
+    let v = str.slice(num,str.length);
+    console.log(u,v)
+    if(isCorrect(u)) { 
+      return u + recursion(v);
+    } else { // u가 올바른 괄호 문자열이 아니라면
+      let uArr = [...u];
+      uArr.shift();
+      uArr.pop();
+      let uOrg = '';
+      uArr.forEach((u) => {
+        if(u === '(') uOrg += ')';
+        else uOrg += '(';
+      });
+      return '(' + recursion(v) + ')' + uOrg;
+    }
+  }
+  return answer = recursion(str);
+};
+
+// let str = '(())()'
+// let str = '(()))(';
+// let str = '()))((()';
+let str = ')(';
+// let str = "(()())()";
+console.log(solution(str));
 
 // 3.DFS/BFS_연산자 끼워 넣기
+
+const solution = (num,arr) => {
+  let answer = [];
+  let result = [];
+  let sign = [0,1,2,3];
+  let max = Number.MIN_SAFE_INTEGER;
+  let min = Number.MAX_SAFE_INTEGER;
+
+  for(let i=0; i<sign.length; i++) {
+    for(let j=0; j<arr[i]; j++) {
+      result.push(sign[i]);
+    }
+  }
+  let visited = Array(result.length).fill(0);
+  let tmp = Array(result.length).fill(0);
+  
+  const cal = (array) => {
+    let target = num[0];
+    for(let i=1; i<num.length; i++) {
+      if(array[i-1] === 0) target = parseInt(target+num[i])
+      else if(array[i-1] === 1) target = parseInt(target-num[i])
+      else if(array[i-1] === 2) target = parseInt(target*num[i])
+      else target = parseInt(target/num[i])
+    }
+    return target;
+  }
+  const DFS = (L) => {
+    if(L === result.length) {
+      let val = cal(tmp.slice());
+      max = Math.max(val,max);
+      min = Math.min(val,min);
+      return;
+    } else {
+      for(let i=0; i<result.length; i++) {
+        if(visited[i] === 0) {
+          visited[i] = 1;
+          tmp[L] = result[i];
+          DFS(L+1)
+          visited[i] = 0;
+        }
+      }
+    }
+  }
+  DFS(0);
+  answer.push(max,min);
+  return answer;
+};
+/*
+const num = [1,2,3,4,5,6];
+const arr = [2,1,1,1];
+/*
+const num = [3,4,5];
+const arr = [1,0,1,0];
+*/
+
+const num = [5,6];
+const arr = [0,0,1,0];
+
+console.log(solution(num,arr));
 
 // 3.DFS/BFS_감시 피하기 
 
